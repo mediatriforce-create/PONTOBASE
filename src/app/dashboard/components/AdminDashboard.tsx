@@ -20,7 +20,6 @@ export default function AdminDashboard({ profile, activeCount = 0 }: { profile: 
                     <p style={{ opacity: 0.7 }}>Visão geral da empresa {profile.companies?.name}</p>
                 </div>
             </div>
-
             {/* Hero Section: Onboarding / Company Code */}
             <div className="glass" style={{
                 padding: '2rem',
