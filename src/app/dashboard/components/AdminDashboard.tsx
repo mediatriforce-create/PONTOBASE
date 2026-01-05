@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Users, FileText, Copy, UserPlus, AlertCircle } from 'lucide-react'
 
 // Mock data for now, or passed from server page
-export default function AdminDashboard({ profile }: { profile: any }) {
+export default function AdminDashboard({ profile, activeCount = 0 }: { profile: any, activeCount?: number }) {
     const companyCode = profile.companies?.code || 'N/A'
 
     const copyCode = () => {
