@@ -1,0 +1,134 @@
+.layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: hsl(var(--background));
+}
+
+.sidebar {
+    width: 260px;
+    /* Slightly slimmer */
+    background: hsl(var(--card));
+    border-right: 1px solid hsl(var(--border));
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+.sidebarHeader {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid hsl(var(--border));
+}
+
+.companyName {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin: 0;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.025em;
+}
+
+.companyCode {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: hsl(var(--muted-foreground));
+    margin-top: 0.25rem;
+    font-family: var(--font-inter);
+    /* Use Inter, not monospace */
+    background: hsl(var(--muted));
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    /* Tighter gap */
+    flex: 1;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    /* Smaller padding */
+    border-radius: var(--radius);
+    color: hsl(var(--muted-foreground));
+    text-decoration: none;
+    transition: all 0.2s;
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.navItem:hover {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+}
+
+/* Active State (optional, if I had logic for it, but for now hover is enough) */
+
+.sidebarFooter {
+    border-top: 1px solid hsl(var(--border));
+    padding-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.userInfo {
+    flex: 1;
+    min-width: 0;
+    /* Text truncation support */
+}
+
+.userName {
+    font-weight: 600;
+    font-size: 0.875rem;
+    color: hsl(var(--foreground));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userRole {
+    font-size: 0.75rem;
+    color: hsl(var(--muted-foreground));
+    text-transform: capitalize;
+}
+
+.logoutBtn {
+    background: transparent;
+    border: 1px solid hsl(var(--border));
+    cursor: pointer;
+    color: hsl(var(--muted-foreground));
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logoutBtn:hover {
+    background: hsl(var(--destructive));
+    border-color: hsl(var(--destructive));
+    color: white;
+    /* Contrast on destructive */
+}
+
+.main {
+    flex: 1;
+    padding: 2rem;
+    max-width: 1600px;
+    /* Limit width on huge screens */
+    margin: 0 auto;
+    width: 100%;
+}
