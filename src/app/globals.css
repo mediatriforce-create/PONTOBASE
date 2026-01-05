@@ -2,7 +2,8 @@
 
 :root {
   /* LIGHT MODE (Professional / Clean) */
-  --background: 0 0% 100%;
+  --background: 210 40% 98%;
+  /* Slight off-white/slate tint for depth */
   /* Pure White Application Background */
   --foreground: 222 47% 11%;
   /* Dark Slate Text */
@@ -49,7 +50,8 @@
   --foreground: 210 40% 98%;
   /* White Text */
 
-  --card: 222.2 84% 4.9%;
+  --card: 217 33% 17%;
+  /* Lighter card for contrast in dark mode */
   /* Dark Cards */
   --card-foreground: 210 40% 98%;
 
