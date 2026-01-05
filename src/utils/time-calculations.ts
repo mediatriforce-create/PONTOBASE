@@ -61,6 +61,26 @@ export function calculateInconsistencies(
                     date: new Date(d),
                     details: 'Funcionário não trabalhou neste dia'
                 })
+            } else if (isSameDay(d, new Date())) {
+                // REAL-TIME LATENESS CHECK
+                const [h, m] = schedule.start_time.split(':').map(Number)
+                const scheduledTime = new Date(d)
+                scheduledTime.setHours(h, m, 0, 0)
+
+                const tolerance = schedule.tolerance_minutes || 10
+                const lateThreshold = addMinutes(scheduledTime, tolerance)
+
+                // IMPORTANT: Check robustly if it is a working day (already done by line 43 check, but mostly reliance on work_days)
+                // If it IS a work day (passed line 43) and now > lateThreshold and NO entry:
+                if (new Date() > lateThreshold) {
+                    const diff = differenceInMinutes(new Date(), scheduledTime)
+                    issues.push({
+                        type: 'LATE',
+                        date: new Date(d),
+                        details: `Em atraso (${diff}m)`,
+                        minutesDiff: diff
+                    })
+                }
             }
             continue
         }
