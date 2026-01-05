@@ -64,10 +64,20 @@ export function calculateInconsistencies(
             } else if (isSameDay(d, new Date())) {
                 // REAL-TIME LATENESS CHECK
                 // FIX: Use simple minutes-from-midnight comparison to avoid Timezone/UTC issues.
-                // Comparison: (Current Time Minutes) vs (Scheduled Time Minutes + Tolerance)
+                // Assuming Target Audience is Brazil (UTC-3). 
+                // If Server is UTC (Offset 0), we must subtract 3 hours to get Local "Wall Clock" Time.
 
                 const now = new Date()
-                const currentMinutes = (now.getHours() * 60) + now.getMinutes()
+                let currentMinutes = (now.getHours() * 60) + now.getMinutes()
+
+                // HACK: If server is UTC (offset 0), shift to UTC-3 manually
+                if (now.getTimezoneOffset() === 0) {
+                    // 0 means UTC. We want UTC-3.
+                    // But wait, if it's 14:00 UTC, it's 11:00 BRT.
+                    // 14 * 60 = 840. 11 * 60 = 660. Diff = 180.
+                    currentMinutes -= 180
+                    if (currentMinutes < 0) currentMinutes += 24 * 60 // wrap around day (though unlikely for late check)
+                }
 
                 const [sh, sm] = schedule.start_time.split(':').map(Number)
                 const scheduledMinutes = (sh * 60) + sm
