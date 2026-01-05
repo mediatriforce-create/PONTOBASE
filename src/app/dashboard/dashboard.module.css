@@ -202,3 +202,11 @@
         /* Smaller padding on mobile */
     }
 }
+
+/* Original Desktop Main Content */
+.main {
+    flex: 1;
+    padding: 2rem;
+    width: 100%;
+    /* Removed max-width and margin:0 auto to prevent 'giant white space' gap */
+}
