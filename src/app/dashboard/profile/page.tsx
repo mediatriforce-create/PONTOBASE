@@ -28,6 +28,44 @@ export default async function ProfilePage() {
 
             <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid hsla(var(--foreground)/0.1)', paddingBottom: '0.5rem' }}>Configurações</h2>
+
+                {/* Avatar Section */}
+                <div style={{ marginBottom: '2rem' }}>
+                    <label style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '0.5rem', display: 'block' }}>Foto de Perfil</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                        <div style={{
+                            width: '64px',
+                            height: '64px',
+                            borderRadius: '50%',
+                            background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'hsl(var(--muted))',
+                            border: '1px solid hsl(var(--border))',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '1.5rem',
+                            fontWeight: 700,
+                            color: 'hsl(var(--muted-foreground))'
+                        }}>
+                            {!profile?.avatar_url && profile?.full_name?.charAt(0)}
+                        </div>
+                        <form action={async (formData) => {
+                            'use server'
+                            const { updateAvatar } = await import('./actions')
+                            await updateAvatar(formData)
+                        }} style={{ flex: 1, display: 'flex', gap: '0.5rem' }}>
+                            <input
+                                type="url"
+                                name="photoUrl"
+                                placeholder="https://exemplo.com/sua-foto.jpg"
+                                defaultValue={profile?.avatar_url || ''}
+                                className="input"
+                                style={{ flex: 1 }}
+                            />
+                            <button type="submit" className="btn btn-primary">Salvar</button>
+                        </form>
+                    </div>
+                </div>
+
                 <div style={{ maxWidth: '300px' }}>
                     <ThemeToggle />
                 </div>
