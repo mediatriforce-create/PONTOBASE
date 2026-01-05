@@ -63,39 +63,36 @@ export function calculateInconsistencies(
                 })
             } else if (isSameDay(d, new Date())) {
                 // REAL-TIME LATENESS CHECK
-                // FIX: Strictly force 'America/Sao_Paulo' timezone for "Wall Clock" comparison.
+                // FIX: Use toLocaleString to get exact wall-clock time in Sao Paulo
 
-                const now = new Date()
-
-                // Get current time in Brazil
-                const formatter = new Intl.DateTimeFormat('pt-BR', {
-                    timeZone: 'America/Sao_Paulo',
-                    hour: 'numeric',
-                    minute: 'numeric',
+                // Get current time string in Brazil: "HH:mm" or "HH:mm:ss"
+                const brTime = new Date().toLocaleString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
+                    hour: '2-digit',
+                    minute: '2-digit',
                     hour12: false
-                })
+                });
 
-                const parts = formatter.formatToParts(now)
-                const hourPart = parts.find(p => p.type === 'hour')?.value
-                const minutePart = parts.find(p => p.type === 'minute')?.value
+                // Parse "14:30" -> 14, 30
+                const [hStr, mStr] = brTime.split(':');
 
-                if (hourPart && minutePart) {
-                    const currentMinutes = (parseInt(hourPart) * 60) + parseInt(minutePart)
+                if (hStr && mStr) {
+                    const currentMinutes = (parseInt(hStr) * 60) + parseInt(mStr);
 
-                    const [sh, sm] = schedule.start_time.split(':').map(Number)
-                    const scheduledMinutes = (sh * 60) + sm
-                    const tolerance = schedule.tolerance_minutes || 10
+                    const [sh, sm] = schedule.start_time.split(':').map(Number);
+                    const scheduledMinutes = (sh * 60) + sm;
+                    const tolerance = schedule.tolerance_minutes || 10;
 
-                    const diff = currentMinutes - scheduledMinutes
+                    const diff = currentMinutes - scheduledMinutes;
 
-                    // If diff > tolerance, they are late
+                    // If diff > tolerance, they are late (Check if positive to avoid negative "early")
                     if (diff > tolerance) {
                         issues.push({
                             type: 'LATE',
-                            date: new Date(d),
+                            date: new Date(d), // Use the loop date 'd' which matches today
                             details: `Atrasado ${diff} minutos`,
                             minutesDiff: diff
-                        })
+                        });
                     }
                 }
             }

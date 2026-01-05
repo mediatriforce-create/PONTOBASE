@@ -58,39 +58,23 @@ export default async function EmployeeDetailsPage({ params }: { params: Promise<
                     <h1 style={{ fontSize: '2.5rem', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1 }}>{employee.full_name}</h1>
                     <p style={{ opacity: 0.7, fontSize: '1.1rem', marginTop: '0.25rem' }}>{employee.email}</p>
 
-                    {/* Admin Photo Upload */}
-                    <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <div style={{
-                            width: '48px',
-                            height: '48px',
-                            borderRadius: '50%',
-                            background: employee.avatar_url ? `url(${employee.avatar_url}) center/cover` : 'hsl(var(--muted))',
-                            border: '1px solid hsl(var(--border))',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.2rem',
-                            fontWeight: 700,
-                            color: 'hsl(var(--muted-foreground))'
-                        }}>
-                            {!employee.avatar_url && employee.full_name?.charAt(0)}
-                        </div>
-                        <form action={async (formData) => {
-                            'use server'
-                            const { updateEmployeeAvatar } = await import('./actions')
-                            await updateEmployeeAvatar(id, formData)
-                        }} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <label className="btn btn-outline" style={{ cursor: 'pointer', fontSize: '0.75rem', padding: '0.3rem 0.6rem', height: 'auto' }}>
-                                <span>Alterar Foto</span>
-                                <input
-                                    type="file"
-                                    name="photo"
-                                    accept="image/*"
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                            <button type="submit" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', height: 'auto' }}>Salvar</button>
-                        </form>
+                    {/* Admin Photo Upload - REMOVED AS PER USER REQUEST */}
+                    {/* Display Initials Only */}
+                    <div style={{
+                        width: '64px',
+                        height: '64px',
+                        borderRadius: '50%',
+                        background: 'hsl(var(--muted))',
+                        border: '1px solid hsl(var(--border))',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.5rem',
+                        fontWeight: 700,
+                        color: 'hsl(var(--muted-foreground))',
+                        marginTop: '1rem'
+                    }}>
+                        {employee.full_name?.charAt(0)}
                     </div>
                 </div>
                 {/* Status Badges */}

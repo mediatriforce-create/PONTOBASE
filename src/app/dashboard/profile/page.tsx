@@ -29,41 +29,26 @@ export default async function ProfilePage() {
             <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid hsla(var(--foreground)/0.1)', paddingBottom: '0.5rem' }}>Configurações</h2>
 
-                {/* Avatar Section */}
-                <div style={{ marginBottom: '2rem' }}>
-                    <label style={{ fontSize: '0.9rem', opacity: 0.8, marginBottom: '0.5rem', display: 'block' }}>Foto de Perfil</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <div style={{
-                            width: '64px',
-                            height: '64px',
-                            borderRadius: '50%',
-                            background: profile?.avatar_url ? `url(${profile.avatar_url}) center/cover` : 'hsl(var(--muted))',
-                            border: '1px solid hsl(var(--border))',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '1.5rem',
-                            fontWeight: 700,
-                            color: 'hsl(var(--muted-foreground))'
-                        }}>
-                            {!profile?.avatar_url && profile?.full_name?.charAt(0)}
-                        </div>
-                        <form action={async (formData) => {
-                            'use server'
-                            const { updateAvatar } = await import('./actions')
-                            await updateAvatar(formData)
-                        }} style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            <label className="btn btn-outline" style={{ cursor: 'pointer', fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span>Escolher Arquivo</span>
-                                <input
-                                    type="file"
-                                    name="photo"
-                                    accept="image/*"
-                                    style={{ display: 'none' }}
-                                />
-                            </label>
-                            <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>Salvar Foto</button>
-                        </form>
+                {/* Avatar Section - REMOVED AS PER USER REQUEST */}
+                <div style={{ marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                        width: '80px',
+                        height: '80px',
+                        borderRadius: '50%',
+                        background: 'hsl(var(--muted))',
+                        border: '1px solid hsl(var(--border))',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        fontWeight: 700,
+                        color: 'hsl(var(--muted-foreground))'
+                    }}>
+                        {profile?.full_name?.charAt(0)}
+                    </div>
+                    <div>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 600 }}>{profile?.full_name}</h3>
+                        <p style={{ opacity: 0.7 }}>{profile?.email}</p>
                     </div>
                 </div>
 
