@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import { format } from 'date-fns'
 import ThemeToggle from '@/components/ThemeToggle'
+import styles from './profile.module.css'
 
 export default async function ProfilePage() {
     const supabase = await createClient()
