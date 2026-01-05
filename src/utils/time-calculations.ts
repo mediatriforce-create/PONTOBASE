@@ -77,7 +77,7 @@ export function calculateInconsistencies(
                     issues.push({
                         type: 'LATE',
                         date: new Date(d),
-                        details: `Em atraso (${diff}m)`,
+                        details: `Atrasado ${diff} minutos`,
                         minutesDiff: diff
                     })
                 }

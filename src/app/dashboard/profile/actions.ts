@@ -9,14 +9,41 @@ export async function updateAvatar(formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return { error: 'Unauthorized' }
 
-    const photoUrl = formData.get('photoUrl') as string
+    const file = formData.get('photo') as File
+    if (!file || file.size === 0) {
+        return { error: 'Por favor selecione uma imagem.' }
+    }
 
-    const { error } = await supabase
+    // Basic validation
+    if (file.size > 2 * 1024 * 1024) return { error: 'A imagem deve ter no máximo 2MB.' }
+    if (!file.type.startsWith('image/')) return { error: 'Apenas arquivos de imagem são permitidos.' }
+
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${user.id}-${Date.now()}.${fileExt}`
+    const filePath = `${fileName}`
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file)
+
+    if (uploadError) {
+        console.error('Upload error:', uploadError)
+        return { error: 'Erro ao fazer upload da imagem.' }
+    }
+
+    // Get Public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath)
+
+    // Update Profile
+    const { error: dbError } = await supabase
         .from('profiles')
-        .update({ avatar_url: photoUrl })
+        .update({ avatar_url: publicUrl })
         .eq('id', user.id)
 
-    if (error) return { error: error.message }
+    if (dbError) return { error: dbError.message }
 
     revalidatePath('/dashboard/profile')
     return { success: true }
