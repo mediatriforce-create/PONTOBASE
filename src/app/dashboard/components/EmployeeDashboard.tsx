@@ -66,10 +66,11 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
             const tolerance = schedule.tolerance_minutes || 10
             const lateThreshold = addMinutes(scheduleDate, tolerance)
 
-            // Check if today is a working day
-            // (Note: nextDays logic uses schedule.work_days, I assume today is in it if we are checking lateness, 
-            //  but technically I should check `schedule.work_days.includes(time.getDay())`)
-            if (schedule.work_days?.includes(time.getDay()) && time > lateThreshold) {
+            // Check if today is a working day (Ensure robust type checking for days)
+            const currentDay = time.getDay()
+            const isWorkDay = schedule.work_days?.map((d: any) => Number(d)).includes(currentDay)
+
+            if (isWorkDay && time > lateThreshold) {
                 isLateStart = true
             }
         }
