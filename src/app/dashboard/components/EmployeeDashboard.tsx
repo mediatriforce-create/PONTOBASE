@@ -225,10 +225,11 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
                                         padding: '1rem',
                                         height: 'auto',
                                         background: 'hsl(142, 70%, 40%)', // Custom Green for Entry
-                                        color: 'white'
+                                        color: 'white',
+                                        opacity: isPending ? 0.7 : 1
                                     }}
                                 >
-                                    <Play fill="currentColor" size={20} /> REGISTRAR ENTRADA
+                                    {isPending ? 'REGISTRANDO...' : <><Play fill="currentColor" size={20} /> REGISTRAR ENTRADA</>}
                                 </button>
                             )}
 
@@ -251,10 +252,11 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
                                                 background: 'hsl(35, 90%, 50%)',
                                                 color: 'white',
                                                 borderColor: 'transparent',
-                                                padding: '1rem'
+                                                padding: '1rem',
+                                                opacity: isPending ? 0.7 : 1
                                             }}
                                         >
-                                            <Pause fill="currentColor" size={18} /> PAUSA
+                                            {isPending ? '...' : <><Pause fill="currentColor" size={18} /> PAUSA</>}
                                         </button>
                                         <button
                                             onClick={() => handleRegister('exit')}
@@ -265,10 +267,11 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
                                                 background: 'hsl(0, 84%, 60%)',
                                                 color: 'white',
                                                 borderColor: 'transparent',
-                                                padding: '1rem'
+                                                padding: '1rem',
+                                                opacity: isPending ? 0.7 : 1
                                             }}
                                         >
-                                            <LogOut size={18} /> ENCERRA
+                                            {isPending ? '...' : <><LogOut size={18} /> ENCERRA</>}
                                         </button>
                                     </div>
                                 </div>
@@ -283,10 +286,11 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
                                         background: 'hsl(142, 70%, 40%)',
                                         color: 'white',
                                         fontSize: '1.125rem',
-                                        padding: '1rem'
+                                        padding: '1rem',
+                                        opacity: isPending ? 0.7 : 1
                                     }}
                                 >
-                                    <Play fill="currentColor" size={20} /> VOLTAR DA PAUSA
+                                    {isPending ? 'REGISTRANDO...' : <><Play fill="currentColor" size={20} /> VOLTAR DA PAUSA</>}
                                 </button>
                             )}
                         </>

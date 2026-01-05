@@ -67,14 +67,14 @@ export default function AdminDashboard({ profile }: { profile: any }) {
 
             {/* Quick Stats Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
-                <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius)' }}>
+                <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid hsl(var(--border))' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                         <div style={{ padding: '0.5rem', background: 'hsla(142, 70%, 40%, 0.1)', borderRadius: 'var(--radius)', color: 'hsl(142, 70%, 40%)' }}>
                             <Users size={20} />
                         </div>
                         <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Ativos Agora</span>
                     </div>
-                    <div style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1, letterSpacing: '-0.03em' }}>--</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 700, lineHeight: 1, letterSpacing: '-0.03em' }}>{activeCount}</div>
                     <p style={{ fontSize: '0.85rem', color: 'hsl(var(--muted-foreground))', marginTop: '0.5rem' }}>Funcionários trabalhando</p>
                 </div>
 

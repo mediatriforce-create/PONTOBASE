@@ -52,7 +52,7 @@ export default function TimeClockPage() {
                     className="btn btn-primary"
                     style={{ height: '5rem', fontSize: '1.25rem' }}
                 >
-                    Registrar Entrada
+                    {isPending ? 'Registrando...' : 'Registrar Entrada'}
                 </button>
                 <button
                     onClick={() => handleRegister('exit')}
@@ -60,7 +60,7 @@ export default function TimeClockPage() {
                     className="btn btn-outline"
                     style={{ height: '5rem', fontSize: '1.25rem', borderColor: 'hsl(0, 84%, 60%)', color: 'hsl(0, 84%, 60%)' }}
                 >
-                    Registrar Saída
+                    {isPending ? 'Registrando...' : 'Registrar Saída'}
                 </button>
                 <button
                     onClick={() => handleRegister('break_start')}
