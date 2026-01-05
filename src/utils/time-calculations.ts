@@ -63,17 +63,20 @@ export function calculateInconsistencies(
                 })
             } else if (isSameDay(d, new Date())) {
                 // REAL-TIME LATENESS CHECK
-                const [h, m] = schedule.start_time.split(':').map(Number)
-                const scheduledTime = new Date(d)
-                scheduledTime.setHours(h, m, 0, 0)
+                // FIX: Use simple minutes-from-midnight comparison to avoid Timezone/UTC issues.
+                // Comparison: (Current Time Minutes) vs (Scheduled Time Minutes + Tolerance)
 
+                const now = new Date()
+                const currentMinutes = (now.getHours() * 60) + now.getMinutes()
+
+                const [sh, sm] = schedule.start_time.split(':').map(Number)
+                const scheduledMinutes = (sh * 60) + sm
                 const tolerance = schedule.tolerance_minutes || 10
-                const lateThreshold = addMinutes(scheduledTime, tolerance)
 
-                // IMPORTANT: Check robustly if it is a working day (already done by line 43 check, but mostly reliance on work_days)
-                // If it IS a work day (passed line 43) and now > lateThreshold and NO entry:
-                if (new Date() > lateThreshold) {
-                    const diff = differenceInMinutes(new Date(), scheduledTime)
+                const diff = currentMinutes - scheduledMinutes
+
+                // If diff > tolerance, they are late
+                if (diff > tolerance) {
                     issues.push({
                         type: 'LATE',
                         date: new Date(d),
