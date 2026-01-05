@@ -35,7 +35,7 @@ export default async function ProfilePage() {
             <div className="glass" style={{ padding: '2rem', borderRadius: '1rem', marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', borderBottom: '1px solid hsla(var(--foreground)/0.1)', paddingBottom: '0.5rem' }}>Dados Pessoais</h2>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div className={styles.gridContainer}>
                     <div>
                         <label style={{ fontSize: '0.85rem', opacity: 0.7 }}>Nome Completo</label>
                         <div style={{ fontWeight: 500 }}>{profile?.full_name}</div>

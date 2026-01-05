@@ -65,7 +65,7 @@ export default function AdminDashboard({ profile, activeCount = 0 }: { profile: 
             </div>
 
             {/* Quick Stats Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
                 <div className="glass" style={{ padding: '1.5rem', borderRadius: 'var(--radius)', border: '1px solid hsl(var(--border))' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
                         <div style={{ padding: '0.5rem', background: 'hsla(142, 70%, 40%, 0.1)', borderRadius: 'var(--radius)', color: 'hsl(142, 70%, 40%)' }}>
