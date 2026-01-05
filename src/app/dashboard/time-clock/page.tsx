@@ -30,8 +30,22 @@ export default function TimeClockPage() {
         <div className="container" style={{ maxWidth: '800px' }}>
             <h1 style={{ marginBottom: '2rem', fontSize: '1.5rem' }}>Meu Ponto</h1>
 
-            <div className="glass" style={{ padding: '3rem', borderRadius: '1.5rem', textAlign: 'center', marginBottom: '2rem' }}>
-                <div style={{ fontSize: 'clamp(2.5rem, 12vw, 5rem)', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '-0.05em', lineHeight: 1 }}>
+            <div className="glass" style={{
+                padding: 'clamp(1.5rem, 5vw, 3rem)', // Reduced responsive padding
+                borderRadius: '1.5rem',
+                textAlign: 'center',
+                marginBottom: '2rem',
+                width: '100%',
+                overflow: 'hidden' // Prevent spill
+            }}>
+                <div style={{
+                    fontSize: 'clamp(2rem, 13vw, 5rem)', // Slightly smaller min, slightly flexible viewport
+                    fontWeight: '800',
+                    fontFamily: 'monospace',
+                    letterSpacing: '-0.05em',
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap' // Prevent wrapping
+                }}>
                     {format(time, 'HH:mm:ss')}
                 </div>
                 <div style={{ fontSize: '1.25rem', color: 'hsla(var(--foreground)/0.6)', marginTop: '0.5rem' }}>
