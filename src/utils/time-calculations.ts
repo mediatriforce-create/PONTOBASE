@@ -63,36 +63,40 @@ export function calculateInconsistencies(
                 })
             } else if (isSameDay(d, new Date())) {
                 // REAL-TIME LATENESS CHECK
-                // FIX: Use simple minutes-from-midnight comparison to avoid Timezone/UTC issues.
-                // Assuming Target Audience is Brazil (UTC-3). 
-                // If Server is UTC (Offset 0), we must subtract 3 hours to get Local "Wall Clock" Time.
+                // FIX: Strictly force 'America/Sao_Paulo' timezone for "Wall Clock" comparison.
 
                 const now = new Date()
-                let currentMinutes = (now.getHours() * 60) + now.getMinutes()
 
-                // HACK: If server is UTC (offset 0), shift to UTC-3 manually
-                if (now.getTimezoneOffset() === 0) {
-                    // 0 means UTC. We want UTC-3.
-                    // But wait, if it's 14:00 UTC, it's 11:00 BRT.
-                    // 14 * 60 = 840. 11 * 60 = 660. Diff = 180.
-                    currentMinutes -= 180
-                    if (currentMinutes < 0) currentMinutes += 24 * 60 // wrap around day (though unlikely for late check)
-                }
+                // Get current time in Brazil
+                const formatter = new Intl.DateTimeFormat('pt-BR', {
+                    timeZone: 'America/Sao_Paulo',
+                    hour: 'numeric',
+                    minute: 'numeric',
+                    hour12: false
+                })
 
-                const [sh, sm] = schedule.start_time.split(':').map(Number)
-                const scheduledMinutes = (sh * 60) + sm
-                const tolerance = schedule.tolerance_minutes || 10
+                const parts = formatter.formatToParts(now)
+                const hourPart = parts.find(p => p.type === 'hour')?.value
+                const minutePart = parts.find(p => p.type === 'minute')?.value
 
-                const diff = currentMinutes - scheduledMinutes
+                if (hourPart && minutePart) {
+                    const currentMinutes = (parseInt(hourPart) * 60) + parseInt(minutePart)
 
-                // If diff > tolerance, they are late
-                if (diff > tolerance) {
-                    issues.push({
-                        type: 'LATE',
-                        date: new Date(d),
-                        details: `Atrasado ${diff} minutos`,
-                        minutesDiff: diff
-                    })
+                    const [sh, sm] = schedule.start_time.split(':').map(Number)
+                    const scheduledMinutes = (sh * 60) + sm
+                    const tolerance = schedule.tolerance_minutes || 10
+
+                    const diff = currentMinutes - scheduledMinutes
+
+                    // If diff > tolerance, they are late
+                    if (diff > tolerance) {
+                        issues.push({
+                            type: 'LATE',
+                            date: new Date(d),
+                            details: `Atrasado ${diff} minutos`,
+                            minutesDiff: diff
+                        })
+                    }
                 }
             }
             continue

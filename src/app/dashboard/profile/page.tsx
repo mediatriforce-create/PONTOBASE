@@ -52,16 +52,17 @@ export default async function ProfilePage() {
                             'use server'
                             const { updateAvatar } = await import('./actions')
                             await updateAvatar(formData)
-                        }} style={{ flex: 1, display: 'flex', gap: '0.5rem' }}>
-                            <input
-                                type="url"
-                                name="photoUrl"
-                                placeholder="https://exemplo.com/sua-foto.jpg"
-                                defaultValue={profile?.avatar_url || ''}
-                                className="input"
-                                style={{ flex: 1 }}
-                            />
-                            <button type="submit" className="btn btn-primary">Salvar</button>
+                        }} style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                            <label className="btn btn-outline" style={{ cursor: 'pointer', fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span>Escolher Arquivo</span>
+                                <input
+                                    type="file"
+                                    name="photo"
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            <button type="submit" className="btn btn-primary" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem' }}>Salvar Foto</button>
                         </form>
                     </div>
                 </div>
