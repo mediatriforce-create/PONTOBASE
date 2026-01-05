@@ -174,7 +174,7 @@ export default function EmployeeDashboard({ profile, todayEntries }: EmployeeDas
                 )}
 
                 <div style={{
-                    fontSize: '5rem',
+                    fontSize: 'clamp(3rem, 14vw, 6rem)',
                     fontWeight: '700',
                     fontFamily: 'var(--font-inter)', // Use the system font, specialized mono not needed if numbers align well or use font-variant-numeric: tabular-nums
                     fontVariantNumeric: 'tabular-nums',
