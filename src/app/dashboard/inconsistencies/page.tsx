@@ -50,7 +50,7 @@ export default async function InconsistenciesPage() {
             employee: emp,
             issues: [...issues, ...todayLate]
         }
-    }).filter(r => r.issues.length > 0) || []
+    }) || []
 
     return (
         <div className="container" style={{ maxWidth: '1000px' }}>
