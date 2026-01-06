@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { createCompany, joinCompany } from './actions'
+import { useRouter } from 'next/navigation'
 
 export default function OnboardingPage() {
     const [mode, setMode] = useState<'create' | 'join'>('join')
     const [error, setError] = useState<string | null>(null)
     const [loading, setLoading] = useState(false)
+    const router = useRouter()
 
     // Note: Using simple form submission for now, could upgrade to useTransition
 
@@ -62,11 +64,24 @@ export default function OnboardingPage() {
                     </form>
                 ) : (
                     <form action={async (formData) => {
+                        console.log('Submitting Create Company...')
                         setLoading(true)
                         setError(null)
-                        const res = await createCompany(formData)
-                        if (res?.error) {
-                            setError(res.error)
+                        try {
+                            const res = await createCompany(formData)
+                            console.log('Create result:', res)
+
+                            if (res?.error) {
+                                setError(res.error)
+                                setLoading(false)
+                            } else if (res?.success) {
+                                console.log('Success! Redirecting...')
+                                router.push('/dashboard')
+                                // Don't setLoading(false) here to prevent flash
+                            }
+                        } catch (e) {
+                            console.error('Create error:', e)
+                            setError('Ocorreu um erro inesperado: ' + e)
                             setLoading(false)
                         }
                     }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
