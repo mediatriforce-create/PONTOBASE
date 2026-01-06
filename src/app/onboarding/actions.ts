@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 export async function createCompany(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+    if (!user) return { error: 'Usuário não autenticado' }
 
     const name = formData.get('companyName') as string
     if (!name) return { error: 'Nome da empresa é obrigatório' }
