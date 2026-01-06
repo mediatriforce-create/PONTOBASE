@@ -19,6 +19,7 @@ DROP FUNCTION IF EXISTS public.get_my_role() CASCADE;
 DROP FUNCTION IF EXISTS public.get_my_company_id() CASCADE;
 DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
 DROP FUNCTION IF EXISTS public.auto_confirm_email() CASCADE;
+DROP FUNCTION IF EXISTS public.get_company_by_code(text) CASCADE;
 
 -- 2. TABELAS BASE
 
@@ -99,6 +100,12 @@ $$ LANGUAGE sql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.get_my_company_id()
 RETURNS uuid AS $$
   SELECT company_id FROM public.profiles WHERE id = auth.uid() LIMIT 1;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Função para encontrar empresa pelo código (Bypassa RLS para quem ainda não é membro)
+CREATE OR REPLACE FUNCTION public.get_company_by_code(code_input TEXT)
+RETURNS uuid AS $$
+  SELECT id FROM public.companies WHERE code = code_input LIMIT 1;
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- Habilitar RLS

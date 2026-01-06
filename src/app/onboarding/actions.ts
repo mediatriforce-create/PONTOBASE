@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/utils/supabase/server'
-import { redirect } from 'next/navigation'
+
 import { revalidatePath } from 'next/cache'
 
 export async function createCompany(formData: FormData) {
@@ -40,32 +40,30 @@ export async function createCompany(formData: FormData) {
     if (profileError) return { error: 'Erro ao atualizar perfil: ' + profileError.message }
 
     revalidatePath('/dashboard')
-    redirect('/dashboard')
+    // Return success to let client handle redirect safely
+    return { success: true }
 }
 
 export async function joinCompany(formData: FormData) {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+    if (!user) return { error: 'Usuário não autenticado' }
 
     const code = formData.get('companyCode') as string
     if (!code) return { error: 'Código da empresa é obrigatório' }
 
-    // 1. Find Company
-    const { data: company, error: companyError } = await supabase
-        .from('companies')
-        .select('id')
-        .eq('code', code)
-        .single()
+    // 1. Find Company (Use RPC to bypass RLS, as we are not a member yet)
+    const { data: companyId, error: companyError } = await supabase
+        .rpc('get_company_by_code', { code_input: code })
 
-    if (companyError || !company) return { error: 'Empresa não encontrada com este código' }
+    if (companyError || !companyId) return { error: 'Empresa não encontrada com este código' }
 
     // 2. Update Profile (Upsert)
     const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
             id: user.id,
-            company_id: company.id,
+            company_id: companyId, // Result from RPC is just the ID
             role: 'employee',
             email: user.email,
             full_name: user.user_metadata?.full_name || 'Funcionário',
@@ -75,5 +73,5 @@ export async function joinCompany(formData: FormData) {
     if (profileError) return { error: 'Erro ao entrar na empresa: ' + profileError.message }
 
     revalidatePath('/dashboard')
-    redirect('/dashboard')
+    return { success: true }
 }
