@@ -45,11 +45,24 @@ export default function OnboardingPage() {
 
                 {mode === 'join' ? (
                     <form action={async (formData) => {
+                        console.log('Submitting Join Company...')
                         setLoading(true)
                         setError(null)
-                        const res = await joinCompany(formData)
-                        if (res?.error) {
-                            setError(res.error)
+                        try {
+                            const res = await joinCompany(formData)
+                            console.log('Join result:', res)
+
+                            if (res?.error) {
+                                setError(res.error)
+                                setLoading(false)
+                            } else if (res?.success) {
+                                console.log('Success! Refreshing and Redirecting...')
+                                router.refresh() // Force re-fetch of layout to see new cookies
+                                router.push('/dashboard')
+                            }
+                        } catch (e) {
+                            console.error('Join error:', e)
+                            setError('Ocorreu um erro inesperado')
                             setLoading(false)
                         }
                     }} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -75,9 +88,9 @@ export default function OnboardingPage() {
                                 setError(res.error)
                                 setLoading(false)
                             } else if (res?.success) {
-                                console.log('Success! Redirecting...')
+                                console.log('Success! Refreshing and Redirecting...')
+                                router.refresh() // Force re-fetch to see new cookies
                                 router.push('/dashboard')
-                                // Don't setLoading(false) here to prevent flash
                             }
                         } catch (e) {
                             console.error('Create error:', e)
