@@ -18,6 +18,7 @@ CREATE TABLE companies (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   cnpj TEXT,
+  code TEXT UNIQUE, -- Código de convite (gerado no backend)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
