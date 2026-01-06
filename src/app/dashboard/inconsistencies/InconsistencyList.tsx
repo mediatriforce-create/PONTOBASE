@@ -117,7 +117,9 @@ export default function InconsistencyList({ report }: { report: ReportItem[] }) 
                                                             alignItems: 'center',
                                                             gap: '0.5rem',
                                                             fontWeight: 600,
-                                                            color: issue.type === 'ABSENT' ? 'hsl(0, 84%, 60%)' : 'hsl(35, 90%, 50%)'
+                                                            // LATE -> Yellow/Orange (hsl 45 for true yellow or 35 for orange-yellow), ABSENT -> Red
+                                                            color: issue.type === 'ABSENT' ? 'hsl(0, 84%, 60%)' :
+                                                                issue.type === 'LATE' ? 'hsl(45, 90%, 50%)' : 'hsl(var(--foreground))'
                                                         }}>
                                                             {issue.type === 'ABSENT' ? <CalendarX size={16} /> : <Clock size={16} />}
                                                             {issue.type === 'ABSENT' ? 'FALTA' :
