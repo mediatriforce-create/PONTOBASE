@@ -140,6 +140,10 @@ CREATE POLICY "Admins manage profiles" ON profiles
     get_my_role() = 'admin'
   );
   
+-- PERMITIR INSERT NO PRÓPRIO PERFIL (Correção para Upsert funcionar se o trigger falhar)
+CREATE POLICY "Users can insert own profile" ON profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
 -- PERMITIR UPDATE NO PRÓPRIO PERFIL (Para o Onboarding funcionar: setar company_id)
 -- O usuário precisa conseguir se atualizar para entrar numa empresa.
 CREATE POLICY "Users can update own profile" ON profiles
