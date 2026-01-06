@@ -1,15 +1,24 @@
--- =============================================
--- SCHEMA FINAL CONSOLIDADO (PONTOBASE)
--- Use este script para resetar/criar o banco do zero.
--- Execute no SQL Editor do Supabase.
--- =============================================
+-- 1. LIMPEZA (CUIDADO: APAGA TUDO - DADOS E USUÁRIOS)
+-- Descomente as linhas abaixo se quiser limpar TUDO, inclusive logins.
+-- DELETE FROM auth.users CASCADE; 
 
--- 1. LIMPEZA (CUIDADO: APAGA TUDO)
 DROP TABLE IF EXISTS audit_logs CASCADE;
 DROP TABLE IF EXISTS time_entries CASCADE;
 DROP TABLE IF EXISTS schedules CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 DROP TABLE IF EXISTS companies CASCADE;
+
+-- Limpar policies antigas para evitar erro de duplicidade (Storage)
+DROP POLICY IF EXISTS "Avatar Images are Public" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Upload" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Update" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Delete" ON storage.objects;
+
+-- Limpar Funções Helpers antigas
+DROP FUNCTION IF EXISTS public.get_my_role() CASCADE;
+DROP FUNCTION IF EXISTS public.get_my_company_id() CASCADE;
+DROP FUNCTION IF EXISTS public.handle_new_user() CASCADE;
+DROP FUNCTION IF EXISTS public.auto_confirm_email() CASCADE;
 
 -- 2. TABELAS BASE
 
