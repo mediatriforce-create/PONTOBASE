@@ -28,6 +28,7 @@ CREATE TABLE companies (
   name TEXT NOT NULL,
   cnpj TEXT,
   code TEXT UNIQUE, -- Código de convite (gerado no backend)
+  owner_id UUID DEFAULT auth.uid(), -- Dono da empresa (quem criou)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -108,9 +109,11 @@ ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- --- COMPANIES ---
-CREATE POLICY "Admins can view their company" ON companies
+-- Ver: Se for membro da empresa OU se for o dono (criador)
+CREATE POLICY "View company" ON companies
   FOR SELECT USING (
-    id = get_my_company_id()
+    id = get_my_company_id() OR 
+    owner_id = auth.uid()
   );
   
 -- Create/Insert deve ser permitido para qualquer usuário autenticado (criar empresa)
