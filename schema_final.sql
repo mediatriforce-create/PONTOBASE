@@ -1,0 +1,166 @@
+-- =============================================
+-- SCHEMA FINAL CONSOLIDADO (PONTOBASE)
+-- Use este script para resetar/criar o banco do zero.
+-- Execute no SQL Editor do Supabase.
+-- =============================================
+
+-- 1. LIMPEZA (CUIDADO: APAGA TUDO)
+DROP TABLE IF EXISTS audit_logs CASCADE;
+DROP TABLE IF EXISTS time_entries CASCADE;
+DROP TABLE IF EXISTS schedules CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+DROP TABLE IF EXISTS companies CASCADE;
+
+-- 2. TABELAS BASE
+
+-- Empresas
+CREATE TABLE companies (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  cnpj TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Perfis de Usuário (Vinculados ao Auth do Supabase)
+CREATE TABLE profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  company_id UUID REFERENCES companies(id),
+  full_name TEXT,
+  email TEXT,
+  role TEXT CHECK (role IN ('admin', 'employee', 'manager')) DEFAULT 'employee',
+  status TEXT CHECK (status IN ('active', 'inactive')) DEFAULT 'active',
+  avatar_url TEXT, -- URL da foto de perfil
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Horários/Escalas (Configuração por usuário)
+CREATE TABLE schedules (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  week_day INTEGER, -- 0-6 (Dom-Sab)
+  start_time TEXT, -- HH:MM
+  end_time TEXT, -- HH:MM
+  break_start TEXT, -- HH:MM
+  break_end TEXT, -- HH:MM
+  is_work_day BOOLEAN DEFAULT true,
+  schedule_type TEXT DEFAULT 'fixed', -- fixed, flexible
+  tolerance_minutes INTEGER DEFAULT 10,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Registros de Ponto
+CREATE TABLE time_entries (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  entry_type TEXT CHECK (entry_type IN ('entry', 'break_start', 'break_end', 'exit')),
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  location_lat NUMERIC,
+  location_lng NUMERIC,
+  device_info TEXT,
+  edited BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- Logs de Auditoria
+CREATE TABLE audit_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  action TEXT,
+  performed_by UUID REFERENCES profiles(id),
+  target_id UUID, -- ID do objeto afetado
+  details JSONB,
+  timestamp TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 3. STORAGE (Buckets para Avatar)
+-- Cria o bucket se não existir
+INSERT INTO storage.buckets (id, name, public) 
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 4. POLICIES (RLS - Permissões de Acesso)
+
+-- Habilitar RLS
+ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE schedules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE time_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
+
+-- --- COMPANIES ---
+CREATE POLICY "Admins can view their company" ON companies
+  FOR SELECT USING (
+    id IN (SELECT company_id FROM profiles WHERE id = auth.uid())
+  );
+
+-- --- PROFILES ---
+-- Todos podem ver seu próprio perfil
+CREATE POLICY "Users can view own profile" ON profiles
+  FOR SELECT USING (auth.uid() = id);
+
+-- Admins e Gestores podem ver perfis da mesma empresa
+CREATE POLICY "Admins/Managers view company profiles" ON profiles
+  FOR SELECT USING (
+    company_id IN (SELECT company_id FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'manager'))
+  );
+
+-- Admin pode criar/atualizar perfis
+CREATE POLICY "Admins manage profiles" ON profiles
+  FOR ALL USING (
+    company_id IN (SELECT company_id FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- --- SCHEDULES ---
+-- Ler: Dono ou Admin
+CREATE POLICY "View schedules" ON schedules
+  FOR SELECT USING (
+    user_id = auth.uid() OR 
+    user_id IN (SELECT id FROM profiles WHERE company_id = (SELECT company_id FROM profiles WHERE id = auth.uid()) AND role IN ('admin', 'manager'))
+  );
+
+-- Escrever: Apenas Admin
+CREATE POLICY "Manage schedules" ON schedules
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- --- TIME ENTRIES ---
+-- Ler: Dono ou Admin
+CREATE POLICY "View entries" ON time_entries
+  FOR SELECT USING (
+    user_id = auth.uid() OR 
+    user_id IN (SELECT id FROM profiles WHERE company_id = (SELECT company_id FROM profiles WHERE id = auth.uid()) AND role IN ('admin', 'manager'))
+  );
+
+-- Inserir: Apenas o próprio usuário (bater ponto)
+CREATE POLICY "Insert entries" ON time_entries
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Editar/Apagar: Apenas Admin (correção de ponto)
+CREATE POLICY "Admin manage entries" ON time_entries
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+CREATE POLICY "Admin delete entries" ON time_entries
+  FOR DELETE USING (
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- --- STORAGE POLICIES ---
+-- Avatar: Qualquer um autenticado pode ver (public)
+CREATE POLICY "Avatar Images are Public" ON storage.objects
+  FOR SELECT USING ( bucket_id = 'avatars' );
+
+-- Upload: Usuário pode subir seu próprio avatar ou Admin pode subir para outros
+CREATE POLICY "Avatar Upload" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'avatars' AND auth.role() = 'authenticated'
+  );
+
+-- Update/Delete: Dono ou Admin
+CREATE POLICY "Avatar Update" ON storage.objects
+  FOR UPDATE USING ( bucket_id = 'avatars' AND auth.role() = 'authenticated' );
+
+-- 5. TRIGGERS (Opcional, mas útil para criar perfil automático ao cadastrar)
+-- (Neste app, estamos criando o profile manualmente via código na hora do registro, então ok)
+
+-- FIM DO SCRIPT
