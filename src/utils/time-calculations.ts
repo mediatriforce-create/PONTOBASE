@@ -101,20 +101,28 @@ export function calculateInconsistencies(
 
         // CHECK 2: LATENESS
         if (entry) {
-            // Parse scheduled start time for this specific date
-            // schedule.start_time is "HH:mm"
-            const [h, m] = schedule.start_time.split(':').map(Number)
-            const scheduledTime = new Date(d)
-            scheduledTime.setHours(h, m, 0, 0)
+            // FIX: Convert ENTRY timestamp to BRT Minutes directly.
+            // Do NOT compare Date objects, as that introduces Server-Timezone artifacts.
 
-            const actualTime = new Date(entry.timestamp)
+            const entryDate = new Date(entry.timestamp)
+            const entryTimeBR = entryDate.toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            })
 
-            const diff = differenceInMinutes(actualTime, scheduledTime)
+            const [eh, em] = entryTimeBR.split(':').map(Number)
+            const entryMinutes = (eh * 60) + em
 
-            // Only count LATE if schedule type is NOT flexible (or if user wants strict everywhere, but usually flexible allows late start)
-            // User request: "começou atrasado".
-            // Assumption: If 'flexible', lateness doesn't matter as long as hours are met.
-            // But let's stick to tolerance.
+            // Schedule Minutes
+            const [sh, sm] = schedule.start_time.split(':').map(Number)
+            const scheduledMinutes = (sh * 60) + sm
+
+            const diff = entryMinutes - scheduledMinutes
+            const tolerance = schedule.tolerance_minutes || 10
+
+            // Only count LATE if schedule type is NOT flexible (or if user wants strict everywhere)
             const isStrict = schedule.schedule_type === 'fixed' || !schedule.schedule_type
 
             if (isStrict && diff > tolerance) {
