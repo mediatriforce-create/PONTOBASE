@@ -80,6 +80,17 @@ ON CONFLICT (id) DO NOTHING;
 
 -- 4. POLICIES (RLS - Permissões de Acesso)
 
+-- Helper Functions para evitar Recursão Infinita (SECURITY DEFINER bypassa RLS)
+CREATE OR REPLACE FUNCTION public.get_my_role()
+RETURNS text AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid() LIMIT 1;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.get_my_company_id()
+RETURNS uuid AS $$
+  SELECT company_id FROM public.profiles WHERE id = auth.uid() LIMIT 1;
+$$ LANGUAGE sql SECURITY DEFINER;
+
 -- Habilitar RLS
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -90,8 +101,13 @@ ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
 -- --- COMPANIES ---
 CREATE POLICY "Admins can view their company" ON companies
   FOR SELECT USING (
-    id IN (SELECT company_id FROM profiles WHERE id = auth.uid())
+    id = get_my_company_id()
   );
+  
+-- Create/Insert deve ser permitido para qualquer usuário autenticado (criar empresa)
+CREATE POLICY "Users can create companies" ON companies
+  FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
 
 -- --- PROFILES ---
 -- Todos podem ver seu próprio perfil
@@ -101,27 +117,36 @@ CREATE POLICY "Users can view own profile" ON profiles
 -- Admins e Gestores podem ver perfis da mesma empresa
 CREATE POLICY "Admins/Managers view company profiles" ON profiles
   FOR SELECT USING (
-    company_id IN (SELECT company_id FROM profiles WHERE id = auth.uid() AND role IN ('admin', 'manager'))
+    company_id = get_my_company_id() AND 
+    get_my_role() IN ('admin', 'manager')
   );
 
--- Admin pode criar/atualizar perfis
+-- Admin pode criar/atualizar perfis (incluindo atribuir empresa)
 CREATE POLICY "Admins manage profiles" ON profiles
   FOR ALL USING (
-    company_id IN (SELECT company_id FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    company_id = get_my_company_id() AND 
+    get_my_role() = 'admin'
   );
+  
+-- PERMITIR UPDATE NO PRÓPRIO PERFIL (Para o Onboarding funcionar: setar company_id)
+-- O usuário precisa conseguir se atualizar para entrar numa empresa.
+CREATE POLICY "Users can update own profile" ON profiles
+  FOR UPDATE USING (auth.uid() = id);
+
 
 -- --- SCHEDULES ---
 -- Ler: Dono ou Admin
 CREATE POLICY "View schedules" ON schedules
   FOR SELECT USING (
     user_id = auth.uid() OR 
-    user_id IN (SELECT id FROM profiles WHERE company_id = (SELECT company_id FROM profiles WHERE id = auth.uid()) AND role IN ('admin', 'manager'))
+    (user_id IN (SELECT id FROM profiles WHERE company_id = get_my_company_id()) AND get_my_role() IN ('admin', 'manager'))
   );
 
 -- Escrever: Apenas Admin
 CREATE POLICY "Manage schedules" ON schedules
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    get_my_role() = 'admin' AND
+    user_id IN (SELECT id FROM profiles WHERE company_id = get_my_company_id())
   );
 
 -- --- TIME ENTRIES ---
@@ -129,7 +154,7 @@ CREATE POLICY "Manage schedules" ON schedules
 CREATE POLICY "View entries" ON time_entries
   FOR SELECT USING (
     user_id = auth.uid() OR 
-    user_id IN (SELECT id FROM profiles WHERE company_id = (SELECT company_id FROM profiles WHERE id = auth.uid()) AND role IN ('admin', 'manager'))
+    (user_id IN (SELECT id FROM profiles WHERE company_id = get_my_company_id()) AND get_my_role() IN ('admin', 'manager'))
   );
 
 -- Inserir: Apenas o próprio usuário (bater ponto)
@@ -139,14 +164,21 @@ CREATE POLICY "Insert entries" ON time_entries
 -- Editar/Apagar: Apenas Admin (correção de ponto)
 CREATE POLICY "Admin manage entries" ON time_entries
   FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    get_my_role() = 'admin'
   );
 CREATE POLICY "Admin delete entries" ON time_entries
   FOR DELETE USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+     get_my_role() = 'admin'
   );
 
 -- --- STORAGE POLICIES ---
+
+-- Limpar policies antigas para evitar erro de duplicidade
+DROP POLICY IF EXISTS "Avatar Images are Public" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Upload" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Update" ON storage.objects;
+DROP POLICY IF EXISTS "Avatar Delete" ON storage.objects; -- Caso exista
+
 -- Avatar: Qualquer um autenticado pode ver (public)
 CREATE POLICY "Avatar Images are Public" ON storage.objects
   FOR SELECT USING ( bucket_id = 'avatars' );
