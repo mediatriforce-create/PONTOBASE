@@ -163,4 +163,38 @@ CREATE POLICY "Avatar Update" ON storage.objects
 -- 5. TRIGGERS (Opcional, mas útil para criar perfil automático ao cadastrar)
 -- (Neste app, estamos criando o profile manualmente via código na hora do registro, então ok)
 
+-- 6. TRIGGERS AUTOMÁTICOS
+
+-- Auto-Confirmar Email (Útil para não travar no signup)
+CREATE OR REPLACE FUNCTION public.handle_new_user() 
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, email, full_name, role)
+  VALUES (new.id, new.email, new.raw_user_meta_data->>'full_name', 'employee');
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger para criar perfil automaticamente ao criar usuário no Auth
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- Trigger para confirmar email automaticamente (Opcional, mas pedido em scripts anteriores)
+CREATE OR REPLACE FUNCTION public.auto_confirm_email() 
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE auth.users
+    SET email_confirmed_at = now()
+    WHERE id = NEW.id;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- (Descomente abaixo se quiser auto-confirmação, por padrão deixaremos o fluxo normal ou manual)
+-- CREATE TRIGGER on_auth_user_created_confirm
+--   AFTER INSERT ON auth.users
+--   FOR EACH ROW EXECUTE PROCEDURE public.auto_confirm_email();
+
 -- FIM DO SCRIPT
