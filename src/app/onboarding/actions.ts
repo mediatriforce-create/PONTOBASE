@@ -2,6 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
+import { revalidatePath } from 'next/cache'
 
 export async function createCompany(formData: FormData) {
     const supabase = await createClient()
@@ -24,17 +25,21 @@ export async function createCompany(formData: FormData) {
 
     if (companyError) return { error: 'Erro ao criar empresa: ' + companyError.message }
 
-    // 2. Update Profile
-    // Note: RLS 'Admins can update company members' might block this if I am not admin yet?
-    // I have a policy: "Users can update own profile" -> using (id = auth.uid())
-    // So I can update my own company_id and role.
+    // 2. Update Profile (Use UPSERT to ensure it works even if profile was missing)
     const { error: profileError } = await supabase
         .from('profiles')
-        .update({ company_id: company.id, role: 'admin' })
-        .eq('id', user.id)
+        .upsert({
+            id: user.id,
+            company_id: company.id,
+            role: 'admin',
+            email: user.email,
+            full_name: user.user_metadata?.full_name || 'Admin',
+            status: 'active'
+        })
 
     if (profileError) return { error: 'Erro ao atualizar perfil: ' + profileError.message }
 
+    revalidatePath('/dashboard')
     redirect('/dashboard')
 }
 
@@ -55,13 +60,20 @@ export async function joinCompany(formData: FormData) {
 
     if (companyError || !company) return { error: 'Empresa não encontrada com este código' }
 
-    // 2. Update Profile
+    // 2. Update Profile (Upsert)
     const { error: profileError } = await supabase
         .from('profiles')
-        .update({ company_id: company.id, role: 'employee' })
-        .eq('id', user.id)
+        .upsert({
+            id: user.id,
+            company_id: company.id,
+            role: 'employee',
+            email: user.email,
+            full_name: user.user_metadata?.full_name || 'Funcionário',
+            status: 'active'
+        })
 
     if (profileError) return { error: 'Erro ao entrar na empresa: ' + profileError.message }
 
+    revalidatePath('/dashboard')
     redirect('/dashboard')
 }
